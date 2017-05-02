@@ -1,0 +1,26 @@
+table Int
+{
+    value: int;
+}
+
+table String
+{
+    value: string;
+}
+
+table Strings
+{
+    value: [string];
+}
+
+table StringMap
+{
+    key: [string];
+    value: [string];
+}
+
+table IntMap
+{
+    key: [ulong];
+    value: [ulong];
+}
