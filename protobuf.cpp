@@ -189,6 +189,40 @@ void ProtobufDeserializationIntMap(benchmark::State& state)
     }
 }
 
+void ProtobufSerializationFixedIntMap(benchmark::State& state)
+{
+    std::string buf;
+    buf.resize(10 * 1024 * 1024);
+    while (state.KeepRunning()) {
+        protobuf::FixedIntMap s;
+        for (auto&& str : getGeneratedIntMap<10000>()) {
+            s.add_key(str.first);
+            s.add_value(str.second);
+        }
+        bool serialized = s.SerializeToString(&buf);
+        VERIFY(serialized, "Protobuf serialization failed");
+    }
+}
+
+void ProtobufDeserializationFixedIntMap(benchmark::State& state)
+{
+    protobuf::FixedIntMap s;
+    for (auto&& str : getGeneratedIntMap<10000>()) {
+        s.add_key(str.first);
+        s.add_value(str.second);
+    }
+    std::string buf = s.SerializeAsString();
+    while (state.KeepRunning()) {
+        protobuf::FixedIntMap map;
+        bool parsed = map.ParseFromString(buf);
+        VERIFY(parsed, "Protobuf deserialization failed");
+        std::unordered_map<int, int> result;
+        for (int i = 0; i < map.key_size(); ++i) {
+            result.emplace(map.key(i), map.value(i));
+        }
+    }
+}
+
 BENCHMARK(ProtobufSerializationInt);
 BENCHMARK(ProtobufDeserializationInt);
 BENCHMARK(ProtobufSerializationString);
@@ -201,3 +235,5 @@ BENCHMARK(ProtobufSerializationStringMap);
 BENCHMARK(ProtobufDeserializationStringMap);
 BENCHMARK(ProtobufSerializationIntMap);
 BENCHMARK(ProtobufDeserializationIntMap);
+BENCHMARK(ProtobufSerializationFixedIntMap);
+BENCHMARK(ProtobufDeserializationFixedIntMap);
